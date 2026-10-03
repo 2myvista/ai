@@ -1,27 +1,56 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>hello.ai</title>
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            font-family: system-ui, sans-serif;
-        }
-        h1 {
-            color: #fff;
-            font-size: 4rem;
-            text-shadow: 0 0 20px rgba(100, 150, 255, 0.6);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todo List (Vue)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 </head>
-<body>
-    <h1>hello.ai</h1>
+<body class="bg-gray-100 min-h-screen flex items-start justify-center pt-12">
+  <div id="app" class="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">📝 Todo List</h1>
+
+    <form @submit.prevent="addTodo" class="flex gap-2 mb-4">
+      <input v-model="newTodo" type="text" placeholder="Новая задача..."
+             class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <button type="submit"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">Добавить</button>
+    </form>
+
+    <ul class="space-y-2">
+      <li v-for="(todo, i) in todos" :key="i"
+          class="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-lg">
+        <input type="checkbox" v-model="todo.done" class="w-4 h-4 accent-blue-500 cursor-pointer">
+        <span class="flex-1" :class="todo.done ? 'line-through text-gray-400' : 'text-gray-800'">{{ todo.text }}</span>
+        <button @click="removeTodo(i)" class="text-red-400 hover:text-red-600 font-bold">✕</button>
+      </li>
+    </ul>
+    <p v-if="todos.length === 0" class="text-gray-400 text-center py-6">Задач нет 🎉</p>
+  </div>
+
+<script>
+const { createApp, ref, watch } = Vue;
+
+createApp({
+  setup() {
+    const todos = ref(JSON.parse(localStorage.getItem('todos') || '[]'));
+    const newTodo = ref('');
+
+    watch(todos, () => localStorage.setItem('todos', JSON.stringify(todos.value)), { deep: true });
+
+    const addTodo = () => {
+      const text = newTodo.value.trim();
+      if (!text) return;
+      todos.value.push({ text, done: false });
+      newTodo.value = '';
+    };
+
+    const removeTodo = (i) => todos.value.splice(i, 1);
+
+    return { todos, newTodo, addTodo, removeTodo };
+  }
+}).mount('#app');
+</script>
 </body>
 </html>
